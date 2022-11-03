@@ -1,5 +1,7 @@
 const express = require('express')
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose')
+const ProductsRoute = require('./routes/products') 
 
 const connection_string = 
     'mongodb+srv://admin:0000@cluster0.mooongk.mongodb.net/test'
@@ -15,7 +17,8 @@ const app = express()
 
 app.use(express.json())
 
-const PORT = 5000 // Khai báo PORT
+// Khai báo PORT
+const PORT = 5000
 
 app.listen(PORT || 3000, () => {
     console.log(`Server is running on port ${PORT}`)
@@ -26,5 +29,9 @@ database.on('error', (error) => {
 })
 
 database.once('connected', () => {
-    console.log('database connected')
+    console.log('Database Connected')
 })
+
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json())
+app.use('', ProductsRoute)
