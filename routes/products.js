@@ -1,7 +1,7 @@
-const express = require('express') // xong
-const route = express.Router() // xong
+const express = require('express')
+const route = express.Router()
 const app = express()
-const cors = require('cors')// xong
+const cors = require('cors')
 
 //CORS middleware
 var allowCrossDomain = function(req, res, next) {
@@ -25,9 +25,9 @@ app.use(function(req, res, next) {
         next()
     })
     
-route.post('/api/products/create', ProductsController.createProduct) //xong
+route.post('/api/products/create', ProductsController.createProduct)
 
-module.exports = route // xong
+module.exports = route
 
 
 

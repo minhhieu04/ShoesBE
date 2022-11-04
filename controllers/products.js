@@ -6,14 +6,13 @@ const Products = require('../models/products')
 const createProduct = (req, res, next) => {
     try {
         const { 
-            productName, productBrand, type, price, discount, quantity, images, 
+            productName, productBrand, type, price, quantity, images, 
         } = req.body
         if (
             !productName || 
             !productBrand ||
             !type || 
-            !price || 
-            !discount || 
+            !price ||
             !quantity || 
             !images
         ) {
@@ -23,7 +22,18 @@ const createProduct = (req, res, next) => {
             })
         }
         let product = new Products(req.body) 
-        product.save()
+        // product.save()
+        // res.status(201).json({
+        //     statusCode: 201,
+        //     massage: 'Created product is successfully'
+        // })
+        product.save().then((response) => {
+            res.json({
+                massage: 'Created product is successfully'
+            })
+        })
+
+        
     } catch (error) {
         console.log(error);
     }

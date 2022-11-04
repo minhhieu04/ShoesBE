@@ -29,7 +29,7 @@ const productsSchema = new Schema(
         },
         quantity: {
             type: Number,
-            required: true,
+            required: false,
         },
         images: {
             type: Object,
