@@ -26,6 +26,11 @@ app.use(function(req, res, next) {
     })
     
 route.post('/api/products/create', ProductsController.createProduct)
+route.get('/api/products/getAllProducts', ProductsController.getAllProducts)
+route.get('/api/products/getProductById/:productId', ProductsController.getProductById)
+route.delete('/api/products/deleteProductById/:productId', ProductsController.deleteProductById)
+route.patch('/api/products/editProduct/:productId', ProductsController.editProduct)
+
 
 module.exports = route
 
