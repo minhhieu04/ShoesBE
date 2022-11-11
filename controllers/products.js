@@ -1,29 +1,33 @@
 const { response } = require('express')
 const { get } = require('mongoose')
 const Products = require('../models/products')
+const ProductValidation = require('../helpers/validation')
 
 
 //CRUD
 // CREATE - POST
-const createProduct = (req, res, next) => {
+const createProduct = async (req, res, next) => {
     try {
-        const { 
-            productName, productBrand, type, price, quantity, images, 
-        } = req.body
-        if (
-            !productName || 
-            !productBrand ||
-            !type || 
-            !price ||
-            !quantity || 
-            !images
-        ) {
-            res.status(400).json({ 
-                statusCode: 400, 
-                message: 'Some fields are not empty.',
-            })
-        }
-        let product = new Products(req.body) 
+        // const abc = ProductValidation.addProductsSchema
+        // const { 
+        //     productName, productBrand, type, price, quantity, images, 
+        // } = req.body
+        // if (
+        //     !productName || 
+        //     !productBrand ||
+        //     !type || 
+        //     !price ||
+        //     !quantity || 
+        //     !images
+        // ) {
+        //     res.status(400).json({ 
+        //         statusCode: 400, 
+        //         message: 'Some fields are not empty.',
+        //     })
+        // }
+        const validBodyReq = await ProductValidation.addProductsSchema.validateAsync(req.body)
+        // let product = new Products(req.body) 
+        let product = new Products(validBodyReq) 
         // product.save()
         // res.status(201).json({
         //     statusCode: 201,
@@ -31,16 +35,20 @@ const createProduct = (req, res, next) => {
         // })
         product.save().then((response) => {
             res.json({
-                massage: 'Created product is successfully'
+                massage: 'Created product is successfully!.'
             })
-        })
-
-        
+        }) 
     } catch (error) {
-        console.log(error);
-        res.status(400).json({
+        // console.log(error);
+        console.log("ERROR: ", error)
+        // res.status(400).json({
+        //     statusCode: 400,
+        //     message: 'Bad request',
+        // })
+        return res.status(400).json({
             statusCode: 400,
-            message: 'Bad request',
+            massage: 'Bad request',
+            errorMassage: error.details[0].message,
         })
     }
 }
@@ -104,9 +112,10 @@ const getProductById = async (req, res, next) => {
 const editProduct = (req, res, next) => {
     try {
         const productId = req.params.productId
-        if (!req.body) {
+        const isBodyEmpty = Object.keys(req.body).length;
+        if (isBodyEmpty === 0) {
             return res.send({
-                statusCode: 404,
+                statusCode: 403,
                 massage: 'Body request can not empty!',
             })
         }
