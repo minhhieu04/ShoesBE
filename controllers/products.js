@@ -25,7 +25,7 @@ const createProduct = async (req, res, next) => {
         //         message: 'Some fields are not empty.',
         //     })
         // }
-        const validBodyReq = await ProductValidation.addProductsSchema.validateAsync(req.body)
+        const validBodyReq = await ProductValidation.addProductSchema.validateAsync(req.body)
         // let product = new Products(req.body) 
         let product = new Products(validBodyReq) 
         // product.save()

@@ -21,11 +21,10 @@ const addUserSchema = Joi.object({
     .pattern(new RegExp(patternPassword)).required(),
     firstName: Joi.string().min(2).max(100).required(),
     lastName: Joi.string().min(2).max(100).required(),
-    phone: Joi.number().required(),
-    email: Joi.string().email({ tlds: { allow: true}}),
-    address: Joi.string().min(10).max(200),
-    avatar: Joi.string(),
-    // images: Joi.array().min(1),
+    phone: Joi.string().required().max(10),
+    email: Joi.string().email({ tlds: { allow: true}}).allow(""),
+    address: Joi.string().min(10).max(200).allow(""),
+    avatar: Joi.string().allow(""),
 })
 
 module.exports = { addProductSchema, addUserSchema }
