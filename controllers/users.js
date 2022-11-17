@@ -1,8 +1,12 @@
 const Users = require('../models/users')
 const UserValidation = require('../helpers/validation')
+const { errorFunction } = require('../utils/errorFunction')
+const securePassword = require('../utils/securePassword')
+const { response } = require('express')
 
 // CRUD
 // CREATE - POST
+/* 
 const createUser = async (req, res, next) => {
     try {
         const validBodyReq = await UserValidation.addUserSchema.validateAsync(req.body)
@@ -27,10 +31,45 @@ const createUser = async (req, res, next) => {
         })
     }
 }
-
-// const addProduct = async (req, res, next) => {
-
-// };
+*/
+const addUser = async (req, res, next) => {
+    try {
+        const existingEmail = await Users.findOne({
+             email: req.body.email 
+        }).lean(true)
+        const existingUsername = await Users.findOne({
+            username: req.body.username
+        }).lean(true)
+        if (existingEmail || existingUsername) {
+            res.status(403)
+            return res.json(errorFunction(true, 403, 'User Already Exist'))
+        } else {
+            const hashedPassword = await securePassword(req.body.password)
+            const newUser = await Users.create({
+                username: req.body.username,
+                password: hashedPassword,
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                phone: req.body.phone,
+                email: req.body.email,
+                address: req.body.address,
+                avatar: req.body.avatar,
+                isAdmin: req.body.isAdmin,
+            })
+            if (newUser) {
+                res.status(201)
+                return res.json(errorFunction(false, 201, 'User Created', newUser))
+            } else {
+                res.status(403)
+                return res.json(errorFunction(true, 403, 'Error Creating User'))
+            }
+        }
+    } catch (error) {
+        res.status(400)
+        console.log(error)
+        return res.json(errorFunction(true, 400, 'Error Adding User'));
+    }
+}
 
 // READ - GET || POST
 
@@ -141,5 +180,5 @@ const deleteUserById = async (req, res, next) => {
         })
     }
 }
-module.exports = { createUser, getAllUsers, getUserById,
+module.exports = { addUser, getAllUsers, getUserById,
      deleteUserById, editUser }

@@ -25,6 +25,7 @@ const addUserSchema = Joi.object({
     email: Joi.string().email({ tlds: { allow: true}}).allow(""),
     address: Joi.string().min(10).max(200).allow(""),
     avatar: Joi.string().allow(""),
+    isAdmin: Joi.boolean().required(),
 })
 
 module.exports = { addProductSchema, addUserSchema }
