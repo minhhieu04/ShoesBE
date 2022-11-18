@@ -9,17 +9,10 @@ const UsersController = require('../controllers/users')
 
 app.use(allowCrossDomain)
 
-// app.use(cors({ origin: '*', credentials: true}))
-// app.use(function(req, res, next) {
-//     res.header('Access-Control-Allow-Origin', '*')
-//     res.header(
-//         'Access-Control-Allow-Headers',
-//         'Origin, X-Requested-With, Content-Type, Accept',
-//         )
-//         next()
-//     })
     
-route.post('/api/auths/register', userValidation, UsersController.addUser)
+route.post('/api/auths/register', userValidation, UsersController.register)
+route.post('/api/auths/login', UsersController.login)
+
 route.get('/api/products/getAllUsers', UsersController.getAllUsers)
 route.get('/api/products/getProductById/:productId', UsersController.getUserById)
 route.delete('/api/products/deleteUserById/:userId', UsersController.deleteUserById)

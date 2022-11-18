@@ -1,8 +1,10 @@
 const Users = require('../models/users')
+const jwt = require('jsonwebtoken')
 const UserValidation = require('../helpers/validation')
 const { errorFunction } = require('../utils/errorFunction')
 const securePassword = require('../utils/securePassword')
 const { response } = require('express')
+const bycrypt = require('bcryptjs')
 
 // CRUD
 // CREATE - POST
@@ -32,7 +34,7 @@ const createUser = async (req, res, next) => {
     }
 }
 */
-const addUser = async (req, res, next) => {
+const register = async (req, res, next) => {
     try {
         const existingEmail = await Users.findOne({
              email: req.body.email 
@@ -68,6 +70,57 @@ const addUser = async (req, res, next) => {
         res.status(400)
         console.log(error)
         return res.json(errorFunction(true, 400, 'Error Adding User'));
+    }
+}
+
+const login = (req, res, next) => {
+    try {
+        var username = req.body.username
+        var password = req.body.password
+
+        Users.findOne({ username: username }).then(
+            (user) => {
+                if (user) {
+                    bycrypt.compare(password, user.password, function (err, result) {
+                        if (err) {
+                            res.json(errorFunction(true, 400, 'Bad request'))
+                        }
+                        if (result) {
+                            let access_token = jwt.sign (
+                                { 
+                                    username: user.username,
+                                    firstName: user.firstName,
+                                    lastName: user.lastName,
+                                    isAdmin: user.isAdmin,
+                                },
+                                'secretValue', 
+                                { 
+                                    expiresIn: '1h'
+                                }
+                            )
+                            res.json({
+                                massage: "login Successfully",
+                                access_token,
+                                userId: user._id,
+                                username: user.username,
+                                firstName: user.firstName,
+                                lastName: user.lastName,
+                                isAdmin: user.isAdmin,
+                                phone: user.phone,
+                                address: user.address,
+                                avatar: user.avatar,
+                            })
+                        } else {
+                            res.json(errorFunction(true, 400, 'Password does not matched'))
+                        }
+                    })
+                } else {
+                    res.json(errorFunction(true, 400, 'User not found'))
+                }
+            },
+        )
+    } catch (error) {
+        res.json(errorFunction(true, 400, 'Bad request'))
     }
 }
 
@@ -180,5 +233,5 @@ const deleteUserById = async (req, res, next) => {
         })
     }
 }
-module.exports = { addUser, getAllUsers, getUserById,
+module.exports = { register, login, getAllUsers, getUserById,
      deleteUserById, editUser }
