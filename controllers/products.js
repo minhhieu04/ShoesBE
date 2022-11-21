@@ -103,7 +103,10 @@ const getAllProducts = async (req, res, next) => {
             res.status(200).json({
                 totalPage: totalPage,
                 totalProducts: allProducts.length,
-                products: filterProducts.reverse()
+                products:
+                    orderByDirection && orderByColumn 
+                        ? filterProducts
+                        : filterProducts.reverse()
             })
         } else {
             res.status(200).json({
@@ -111,18 +114,6 @@ const getAllProducts = async (req, res, next) => {
                 products: [],
             })
         }
-
-
-        // if (allProducts.length > 0) {
-        //     res.status(200).json({
-        //         products: allProducts.reverse(),
-        //     })
-        // } else {
-        //     res.status(200).json({
-        //         message: 'No results',
-        //         products: [],
-        //     })
-        // }
     } catch (error) {
         console.log('error', error)
         res.status(400).json({
