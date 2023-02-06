@@ -1,4 +1,4 @@
-const express = require('express')
+ const express = require('express')
 const route = express.Router()
 const app = express()
 const { allowCrossDomain } = require('../utils/corsMiddleware')

@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose')
 const ProductsRoute = require('./routes/products') 
 const UsersRoute = require('./routes/users')
+const OrdersRoute = require('./routes/orders')
+const CartsRoute = require('./routes/carts')
 
 const connection_string = process.env.CONNECTION_STRING
 
@@ -37,3 +39,5 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use('', ProductsRoute)
 app.use('', UsersRoute)
+app.use('', OrdersRoute)
+app.use('', CartsRoute)

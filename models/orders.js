@@ -48,7 +48,7 @@ const odersSchema = new Schema(
             required: true,
         },
         orderStatus: {
-            type: Boolean,
+            type: Number,
             required: true
         }
     },   

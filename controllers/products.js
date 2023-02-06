@@ -87,7 +87,7 @@ const getAllProducts = async (req, res, next) => {
             ],
         }
         const filterProducts = await Products.find(filter)
-        .sort(`${orderByDirection === 'asc' ? '-': ''} ${orderByColumn}`)
+        .sort(`${orderByDirection === 'asc' ? '' : '-'}${orderByColumn}`)
         .limit(pageSize * 1)
         .skip((pageNumber - 1) * pageSize)
 

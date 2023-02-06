@@ -99,7 +99,7 @@ const login = (req, res, next) => {
                                 }
                             )
                             res.json({
-                                massage: "login Successfully",
+                                massage: "Login Successfully",
                                 access_token,
                                 userId: user._id,
                                 username: user.username,
