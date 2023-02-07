@@ -8,35 +8,33 @@ const orderValidation = require('../helpers/orderValidation');
 
 //CREATE OLD
 
-// const createOrder = async (req, res, next) => {
-//     try {
-//       const productId = await Products.findById(req.body.productId)
-//       const userId = await Users.findById(req.body.userId)
-//       if (!userId) {
-//         return res.json(
-//           errorFunction(true, 204, 'This user Id have not in the database'),
-//         )
-//       }
-//       if (!productId) {
-//         return res.json(
-//           errorFunction(true, 204, 'This product Id have not in the database'),
-//         )
-//       }
-//       const newOrder = await Orders.create(req.body)
-//       if (newOrder) {
-//         res.status(201)
-//         return res.json(errorFunction(false, 201, 'Order Created', newOrder))
-//       } else {
-//         res.status(403)
-//         return res.json(errorFunction(true, 403, 'Error Creating Order'))
-//       }
-//     } catch (error) {
-//       res.status(400)
-//       return res.json(errorFunction(true, 400, 'Bad request'))
-//     }
-// }
-
-// REMOVE PRODUCT IN CART IF USER BUY FROM HIS CART
+const createOrder = async (req, res, next) => {
+    try {
+      const productId = await Products.findById(req.body.productId)
+      const userId = await Users.findById(req.body.userId)
+      if (!userId) {
+        return res.json(
+          errorFunction(true, 204, 'This user Id have not in the database'),
+        )
+      }
+      if (!productId) {
+        return res.json(
+          errorFunction(true, 204, 'This product Id have not in the database'),
+        )
+      }
+      const newOrder = await Orders.create(req.body)
+      if (newOrder) {
+        res.status(201)
+        return res.json(errorFunction(false, 201, 'Order Created', newOrder))
+      } else {
+        res.status(403)
+        return res.json(errorFunction(true, 403, 'Error Creating Order'))
+      }
+    } catch (error) {
+      res.status(400)
+      return res.json(errorFunction(true, 400, 'Bad request'))
+    }
+}
 
 // NEW
 // ADD ORDER AND CHECK IN STOCK
@@ -52,6 +50,8 @@ const addOrderProduct = async (req, res, next) => {
     // if quantity of body request(ex: 2) <= quantity of this product in stock quantity -> ok
     // Update quantity of product in stock(10 - 2 = 8)
     // else -> show message
+
+    // REMOVE PRODUCT IN CART IF USER BUY FROM HIS CART
     try {
         const quantity = req.body.quantity
         const user = await Users.findById(req.body.userId)
@@ -60,6 +60,8 @@ const addOrderProduct = async (req, res, next) => {
         // CHECK IS THIS PRODUCT FROM CART?
         const isProductFromCart = req.body?.cartId
         const cartId = req.body?.cartId
+        // remove carrId in body request if want
+        // delete req.body?.cartId
         if (!user) {
             return res.json(
                 errorFunction(true, 204, 'This user Id have not in the database'),
@@ -76,18 +78,25 @@ const addOrderProduct = async (req, res, next) => {
                 const newOrder = await Orders.create(req.body)
                 if (newOrder) {
                     // UPDATE PRODUCT
-                    Products.findByIdAndUpdate(req.body.productId, requestProduct).then(
-                        (data) => {
-                            if (data) {
-                                res.status(201)
-                                return res.json(
-                                    errorFunction(false, 201, 'Order Created', newOrder)
-                                )
-                            } else {
-                                return res.json(errorFunction(true, 400, 'Bad request'))
-                            }
-                        },
-                    )
+                    Products.findByIdAndUpdate(req.body.productId, requestProduct)
+                    .then((data) => {
+                        if (data) {
+                            // REMOVE PRODUCT IN CART
+                            // if(isProductFromCart) {
+                            //  deleteProductByIdInCart(cartId)
+                            // }
+                            res.status(201)
+                            return res.json(
+                                errorFunction(false, 201, 'Order Created', newOrder)
+                            )
+                        } else {
+                            return res.json(errorFunction(true, 400, 'Bad request'))
+                        }
+                    })
+                    // REMOVE PRODUCT IN CART
+                    if(isProductFromCart) {
+                        await deleteProductByIdInCart(cartId)
+                    }
                 } else {
                     res.status(403)
                     return res.json(errorFunction(true, 403, 'Error Creating Order'))
@@ -98,6 +107,34 @@ const addOrderProduct = async (req, res, next) => {
                      'The quantity is greater than quantity in the stock'),)
             }
         }
+    } catch (error) {
+        res.status(400)
+        return res.json(errorFunction(true, 400, 'Bad request'))
+    }
+}
+
+// ADD MULTIPLE ORDERS
+const addMultipleOrders = async (req, res, next) => {
+    try {
+        const items = req.body.map((item)=> new Orders(item))
+        Promise.all(
+            items.map((item)=> {
+                if (item?.cartId) {
+                    deleteProductByIdInCart(item?.cartId)
+                    // Carts.findByIdAndRemove(item?.cartId)
+                }
+                item.save()
+                //Orders.create(item)
+            }),
+        )
+        .then((result) => {
+            res.status(200)
+            return res.json(errorFunction(false, 201, 'Order Created'))
+        })
+        .catch((error) => {
+            res.status(400)
+            return res.json(errorFunction(true, 400, 'Bad request'))
+        })
     } catch (error) {
         res.status(400)
         return res.json(errorFunction(true, 400, 'Bad request'))
@@ -210,10 +247,42 @@ const getOrderById = async (req, res, next) => {
     }
 }
 
+//get orders by user id
+const getOrdersByUserId = async (req, res, next) => {
+    const userId = req.params.userId
+    try {
+      const filter = {
+        $and: [
+          {
+            userId: {
+              $regex: userId,
+              $options: '$i',
+            },
+          },
+        ],
+      }
+      const oders = await Orders.find(filter)
+      if (oders) {
+        res.status(200).json({
+          statusCode: 200,
+          total: oders.length,
+          carts: oders.reverse(),
+        })
+      } else {
+        return res.json(
+          errorFunction(true, 204, 'This order Id have not in the database'),
+        )
+      }
+    } catch (error) {
+      res.status(400)
+      return res.json(errorFunction(true, 400, 'Bad request'))
+    }
+  }
+
 //UPDATE - PUT || PATCH
 const editOrder = (req, res, next) => {
     try {
-        const orderId = req.query.orderId;
+        const orderId = req.params.orderId;
         const isBodyEmpty = Object.keys(req.body).length;
         if (isBodyEmpty === 0) {
             return res.json(errorFunction(true, 404, 'Body request can not empty.'))
@@ -237,28 +306,25 @@ const editOrder = (req, res, next) => {
     }
 }
 
-//DELETE - DELETE
+//DELETE - DELETE ORDER BY ID
 const deleteOrderById = async (req, res, next) => {
-    const orderId = req.query.orderId;
+    const orderId = req.params.orderId
     try {
-        const order = await Orders.findByIdAndRemove(orderId)
-        if (order) {
-            res.status(200).json({
-                statusCode: 200,
-                message: 'Deleted order successfully',
-            })
-        } else {
-            res.json({
-                statusCode: 204,
-                message: 'This order Id have not in the database',
-            })
-        }
-    } catch (error) {
-        console.log('error', error)
-        res.status(400).json({
-            statusCode: 400,
-            message: 'Bad request',
+      const order = await Orders.findByIdAndRemove(orderId)
+      if (order) {
+        res.status(200).json({
+          statusCode: 200,
+          message: 'Deleted order successfully',
         })
+      } else {
+        res.json({
+          statusCode: 204,
+          message: 'This order Id have not in the database',
+        })
+      }
+    } catch (error) {
+      res.status(400)
+      return res.json(errorFunction(true, 400, 'Bad request'))
     }
 }
 
@@ -271,4 +337,13 @@ const deleteProductByIdInCart = async (cartId) => {
     }
 }
 
-module.exports = { addOrderProduct, getAllOrders, getOrderById, editOrder, deleteOrderById }
+module.exports = { 
+    createOrder,
+    addOrderProduct,
+    addMultipleOrders,
+    getAllOrders,
+    getOrderById,
+    getOrdersByUserId,
+    editOrder,
+    deleteOrderById,
+}

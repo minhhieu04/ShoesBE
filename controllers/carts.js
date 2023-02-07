@@ -117,12 +117,12 @@ const getAllCarts = async (req, res, next) => {
                 },
             ],
         }
-        const filterCarts = await Products.find(filter)
+        const filterCarts = await Carts.find(filter)
         .sort(`${orderByDirection === 'asc' ? '' : '-'}${orderByColumn}`)
         .limit(pageSize * 1)
         .skip((pageNumber - 1) * pageSize)
 
-        const allCarts = await Products.find(filter)
+        const allCarts = await Carts.find(filter)
         let totalPage = 0
         if (allCarts.length % pageSize === 0) {
             totalPage = allCarts.length / pageSize
@@ -134,7 +134,7 @@ const getAllCarts = async (req, res, next) => {
             res.status(200).json({
                 totalPage: totalPage,
                 totalProducts: allCarts.length,
-                products:
+                carts:
                     orderByDirection && orderByColumn 
                         ? filterCarts
                         : filterCarts.reverse()
@@ -142,7 +142,7 @@ const getAllCarts = async (req, res, next) => {
         } else {
             res.status(200).json({
                 massage: 'No results',
-                products: [],
+                carts: [],
             })
         }
     } catch (error) {
@@ -176,9 +176,41 @@ const getCartById = async (req, res, next) => {
     }
 }
 
+// get by user id
+const getCartByUserId = async (req, res, next) => {
+  const userId = req.params.userId
+  try {
+    const filter = {
+      $and: [
+        {
+          userId: {
+            $regex: userId,
+            $options: '$i',
+          },
+        },
+      ],
+    }
+    const carts = await Carts.find(filter)
+    if (carts) {
+      res.status(200).json({
+        statusCode: 200,
+        total: carts.length,
+        carts: carts.reverse(),
+      })
+    } else {
+      return res.json(
+        errorFunction(true, 204, 'This cart Id have not in the database'),
+      )
+    }
+  } catch (error) {
+    res.status(400)
+    return res.json(errorFunction(true, 400, 'Bad request'))
+  }
+}
+
 //delete card by cardId
 const deleteCartById = async (req, res, next) => {
-    const cartId = req.query.cartId;
+    const cartId = req.params.cartId;
     try {
         const cart = await Carts.findByIdAndRemove(cartId)
         if (cart) {
@@ -199,10 +231,38 @@ const deleteCartById = async (req, res, next) => {
     }
 }
 
+//UPDATE - PUT || PATCH
+const editCart = (req, res, next) => {
+  try {
+      const cartId = req.params.cartId;
+      const isBodyEmpty = Object.keys(req.body).length;
+      if (isBodyEmpty === 0) {
+          return res.json(errorFunction(true, 404, 'Body request can not empty.'))
+      }
+      Carts.findByIdAndUpdate(cartId, req.body).then((data) => {
+          if (data) {
+              res.status(200).json({
+                  statusCode: 200,
+                  message: 'Updated cart successfully',
+              })
+          } else {
+              res.json({
+                  statusCode: 204,
+                  message: 'This cart Id have not in the database ',
+              })
+          }
+      })
+  } catch (error) {
+      res.status(400)
+      return res.json(errorFunction(true, 400, 'Bad request'))
+  }
+}
+
 module.exports = {
     createCarts,
     getAllCarts,
     getCartById,
-    getCartById,
+    getCartByUserId,
     deleteCartById,
+    editCart,
 }

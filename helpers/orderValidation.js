@@ -18,6 +18,7 @@ const validation = Joi.object({
     .pattern(new RegExp(patternPhoneNumber)).required(),
     address: Joi.string().min(10).max(200).required(),
     orderStatus: Joi.number().required(),
+    cartId: Joi.optional(),
 })
 
 const oderValidation = async (req, res, next) => {

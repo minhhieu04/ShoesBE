@@ -50,6 +50,10 @@ const odersSchema = new Schema(
         orderStatus: {
             type: Number,
             required: true
+        },
+        cartId: {
+            type: String,
+            require: false,
         }
     },   
     { timestamps: true }
