@@ -15,6 +15,7 @@ route.get('/api/carts/getCartById/:cartId', CartsController.getCartById)
 route.get('/api/carts/getCartsByUserId/:userId', CartsController.getCartByUserId)
 
 route.delete('/api/carts/deleteCartById/:cartId', CartsController.deleteCartById)
+route.delete('/api/carts/deleteMultipleCarts', CartsController.deleteMultipleCarts)
 
 route.patch('/api/carts/editCart/:cartId', CartsController.editCart)
 

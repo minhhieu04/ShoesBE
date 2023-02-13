@@ -337,6 +337,28 @@ const deleteProductByIdInCart = async (cartId) => {
     }
 }
 
+// Delete multiple orders
+const deleteMultipleOrders = async (req, res) => {
+  const listOrdersId = req.body;
+  try {
+    Promise.all(
+      listOrdersId.map((orderId) => Orders.findByIdAndRemove(orderId))
+    )
+      .then((response) => {
+        res.status(200);
+        return res.json(
+          errorFunction(false, 200, "Deleted products in order Successfully")
+        );
+      })
+      .catch((error) => {
+        res.status(400);
+        return res.json(errorFunction(true, 400, "Bad request"));
+      });
+  } catch (error) {
+    res.status(400);
+    return res.json(errorFunction(true, 400, "Bad request"));
+  }
+};
 module.exports = { 
     createOrder,
     addOrderProduct,
@@ -346,4 +368,5 @@ module.exports = {
     getOrdersByUserId,
     editOrder,
     deleteOrderById,
+    deleteMultipleOrders,
 }

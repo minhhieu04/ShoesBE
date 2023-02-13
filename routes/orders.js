@@ -17,6 +17,7 @@ route.get('/api/orders/getOrderById/:orderId', OrdersController.getOrderById)
 route.get('/api/orders/getOrdersByUserId/:userId', OrdersController.getOrdersByUserId)
 
 route.delete('/api/orders/deleteOrderById/:orderId', OrdersController.deleteOrderById)
+route.delete('/api/orders/deleteMultipleOrders', OrdersController.deleteMultipleOrders)
 
 route.patch('/api/oders/editOrderById/:orderId', OrdersController.editOrder)
 
