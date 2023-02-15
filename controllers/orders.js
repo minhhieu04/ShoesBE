@@ -3,7 +3,6 @@ const Products = require('../models/products')
 const Users = require('../models/users')
 const Carts = require('../models/carts')
 const errorFunction = require('../utils/errorFunction');
-const orderValidation = require('../helpers/orderValidation');
 
 
 //CREATE OLD
@@ -156,14 +155,16 @@ const getAllOrders = async (req, res, next) => {
             orderByColumn,
             orderByDirection = 'desc',
         } = req.query
-        // const ordersStatusFilter = orderStatus 
-        // ? {
-        //     orderStatus: orderStatus,
-        // }
-        // : {
-        //     productName: productName,
-        //     $options: '$i'
-        // }
+        const ordersStatusFilter = orderStatus 
+        ? {
+            orderStatus: orderStatus,
+        }
+        : {
+          productName: {
+            $regex: productName,
+            $options: '$i',
+          }
+        }
         const filter = {
             $and: [
                 {
@@ -184,7 +185,7 @@ const getAllOrders = async (req, res, next) => {
                         $options: '$i',
                     },
                 },
-                // ordersStatusFilter,
+                ordersStatusFilter,
             ],
         }
         const filterOrders = await Orders.find(filter)
