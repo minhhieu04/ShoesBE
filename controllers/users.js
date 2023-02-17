@@ -151,19 +151,19 @@ const getAllUsers = async (req, res, next) => {
 
 // get by id
 const getUserById = async (req, res, next) => {
-    const productId = req.params.productId
+    const userId = req.params.userId
     try {
-        const product = await Products.findById(productId)
-        if (product) {
+        const userResult = await Users.findById(userId)
+        if (userResult) {
             res.status(200).json({
                 statusCode: 200,
-                product,
+                user,
             })
         } else {
             res.json({
                 statusCode: 204,
-                message: 'This product Id have not in the database',
-                products: {},
+                message: 'This user Id have not in the database',
+                user: {},
             })
         }
     } catch (error) {
